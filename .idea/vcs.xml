@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/forge-std" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/openzeppelin-contracts" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/openzeppelin-contracts/lib/erc4626-tests" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/openzeppelin-contracts/lib/forge-std" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/openzeppelin-contracts/lib/halmos-cheatcodes" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/permit2" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/permit2/lib/forge-gas-snapshot" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/permit2/lib/forge-gas-snapshot/lib/forge-std" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/permit2/lib/forge-gas-snapshot/lib/forge-std/lib/ds-test" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/permit2/lib/forge-std" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/permit2/lib/forge-std/lib/ds-test" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/permit2/lib/openzeppelin-contracts" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/permit2/lib/solmate" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/permit2/lib/solmate/lib/ds-test" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/forge-std" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/forge-std/lib/ds-test" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/permit2" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/permit2/lib/forge-gas-snapshot" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/permit2/lib/forge-std" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/permit2/lib/forge-std/lib/ds-test" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/permit2/lib/openzeppelin-contracts" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/permit2/lib/solmate" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/permit2/lib/solmate/lib/ds-test" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/solmate" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/solmate/lib/ds-test" vcs="Git" />
+  </component>
+</project>
