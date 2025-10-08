@@ -19,7 +19,7 @@ import {IPermit2} from "permit2/src/interfaces/IPermit2.sol";
 contract KipuBankV3 is Ownable, ReentrancyGuard, Pausable {
     using SafeERC20 for IERC20; // Enabled secure methods
 
-        // ==============================================================================
+    // ==============================================================================
     // State Variables
     // ==============================================================================
 
@@ -39,7 +39,7 @@ contract KipuBankV3 is Ownable, ReentrancyGuard, Pausable {
      * @notice The immutable instance of the USDC token contract, used as the bank's unit of account.
      */
     IERC20 public immutable i_USDC;
-    
+
     /**
      * @notice The immutable address of the Wrapped Ether (WETH) contract, fetched from the router at deployment.
      */
@@ -57,7 +57,6 @@ contract KipuBankV3 is Ownable, ReentrancyGuard, Pausable {
      * @notice Mapping from a user's address to their balance in USDC (with 6 decimals).
      */
     mapping(address => uint256) private s_usdcBalances;
-
 
     // ==============================================================================
     // Custom Errors
@@ -84,7 +83,7 @@ contract KipuBankV3 is Ownable, ReentrancyGuard, Pausable {
      * @param reason A description of the failure.
      */
     error SwapFailed(string reason);
-    
+
     /**
      * @notice Reverts if a user tries to withdraw more than their available balance.
      * @param userBalance The user's current USDC balance.
@@ -95,7 +94,7 @@ contract KipuBankV3 is Ownable, ReentrancyGuard, Pausable {
     // ==============================================================================
     // Events
     // ==============================================================================
-    
+
     /**
      * @notice Emitted when a user successfully deposits funds and they are converted to USDC.
      * @param user The address of the depositor.
@@ -111,4 +110,28 @@ contract KipuBankV3 is Ownable, ReentrancyGuard, Pausable {
      * @param usdcAmount The amount of USDC withdrawn.
      */
     event Withdrawal(address indexed user, uint256 usdcAmount);
+
+    // ==============================================================================
+    // Constructor
+    // ==============================================================================
+
+    /**
+     * @notice Initializes the contract with key infrastructure addresses and the initial bank cap.
+     * @param _router The address of Uniswap's UniversalRouter contract on the target network.
+     * @param _usdcToken The address of the canonical USDC token contract on the target network.
+     * @param _permit2 The address of Uniswap's Permit2 contract.
+     * @param _initialBankCapUSD The initial capital limit in USDC, denominated with 6 decimals.
+     */
+    constructor(
+        address _router,
+        address _usdcToken,
+        address _permit2,
+        uint256 _initialBankCapUSD
+    ) Ownable(msg.sender) {
+        i_universalRouter = IUniversalRouter(_router);
+        i_USDC = IERC20(_usdcToken);
+        i_permit2 = IPermit2(_permit2);
+        i_WETH = i_universalRouter.WETH9();
+        s_bankCapUSD = _initialBankCapUSD;
+    }
 }
