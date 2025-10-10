@@ -1,12 +1,21 @@
 [submodule "KipuBankV3/lib/forge-std"]
 	path = KipuBankV3/lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
-[submodule "KipuBankV3/lib/universal-router"]
-	path = KipuBankV3/lib/universal-router
-	url = https://github.com/uniswap/universal-router
 [submodule "KipuBankV3/lib/permit2"]
 	path = KipuBankV3/lib/permit2
 	url = https://github.com/uniswap/permit2
 [submodule "KipuBankV3/lib/openzeppelin-contracts"]
 	path = KipuBankV3/lib/openzeppelin-contracts
 	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+[submodule "KipuBankV3/lib/chainlink-brownie-contracts"]
+	path = KipuBankV3/lib/chainlink-brownie-contracts
+	url = https://github.com/smartcontractkit/chainlink-brownie-contracts
+[submodule "KipuBankV3/lib/v4-core"]
+	path = KipuBankV3/lib/v4-core
+	url = https://github.com/uniswap/v4-core
+[submodule "KipuBankV3/lib/v4-periphery"]
+	path = KipuBankV3/lib/v4-periphery
+	url = https://github.com/uniswap/v4-periphery
+[submodule "KipuBankV3/lib/universal-router"]
+	path = KipuBankV3/lib/universal-router
+	url = https://github.com/uniswap/universal-router
