@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.24;
 
 import {Script} from "forge-std/Script.sol";
 import {KipuBankV3} from "../src/KipuBankV3.sol";
@@ -21,10 +21,11 @@ contract DeployKipuBankV3 is Script {
         }
 
         // --- Sepolia Testnet Addresses ---
-        address routerAddress = 0x3A9D48AB9751398BbFa63ad67599Bb04e4BdF98b; // Universal Router
+        address payable routerAddress = payable(0x3A9D48AB9751398BbFa63ad67599Bb04e4BdF98b); // Universal Router
         address usdcTokenAddress = 0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238; // USDC Token
         address wethAddress = 0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14; // WETH9
         address priceFeedAddress = 0x694AA1769357215DE4FAC081bf1f309aDC325306; // Chainlink ETH/USD
+        address permit2Address = 0x000000000022D473030F116dDEE9F6B43aC78BA3; // Permit2 Address
 
         // --- Bank Cap Configuration ---
         // $1,000,000 USD with 8 decimals (to match Chainlink's price feed)
@@ -40,7 +41,8 @@ contract DeployKipuBankV3 is Script {
             usdcTokenAddress,
             priceFeedAddress,
             wethAddress,
-            initialBankCapUSD
+            initialBankCapUSD,
+            permit2Address
         );
 
         // Stop broadcasting

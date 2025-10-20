@@ -2,6 +2,7 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/chainlink-brownie-contracts" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/forge-std" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/openzeppelin-contracts" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/openzeppelin-contracts/lib/erc4626-tests" vcs="Git" />
@@ -21,6 +22,8 @@
     <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/forge-std/lib/ds-test" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/permit2" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/permit2/lib/forge-gas-snapshot" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/permit2/lib/forge-gas-snapshot/lib/forge-std" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/permit2/lib/forge-gas-snapshot/lib/forge-std/lib/ds-test" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/permit2/lib/forge-std" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/permit2/lib/forge-std/lib/ds-test" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/permit2/lib/openzeppelin-contracts" vcs="Git" />
@@ -28,5 +31,103 @@
     <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/permit2/lib/solmate/lib/ds-test" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/solmate" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/solmate/lib/ds-test" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/v3-periphery" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/v4-periphery" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/v4-periphery/lib/permit2" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/v4-periphery/lib/permit2/lib/forge-gas-snapshot" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/v4-periphery/lib/permit2/lib/forge-gas-snapshot/lib/forge-std" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/v4-periphery/lib/permit2/lib/forge-gas-snapshot/lib/forge-std/lib/ds-test" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/v4-periphery/lib/permit2/lib/forge-std" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/v4-periphery/lib/permit2/lib/forge-std/lib/ds-test" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/v4-periphery/lib/permit2/lib/openzeppelin-contracts" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/v4-periphery/lib/permit2/lib/solmate" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/v4-periphery/lib/permit2/lib/solmate/lib/ds-test" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/v4-periphery/lib/v4-core" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/v4-periphery/lib/v4-core/lib/forge-std" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/v4-periphery/lib/v4-core/lib/openzeppelin-contracts" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/v4-periphery/lib/v4-core/lib/openzeppelin-contracts/lib/erc4626-tests" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/v4-periphery/lib/v4-core/lib/openzeppelin-contracts/lib/forge-std" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/v4-periphery/lib/v4-core/lib/openzeppelin-contracts/lib/forge-std/lib/ds-test" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/v4-periphery/lib/v4-core/lib/solmate" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/universal-router/lib/v4-periphery/lib/v4-core/lib/solmate/lib/ds-test" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/v4-core" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/v4-core/lib/forge-std" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/v4-core/lib/openzeppelin-contracts" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/v4-core/lib/openzeppelin-contracts/lib/erc4626-tests" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/v4-core/lib/openzeppelin-contracts/lib/forge-std" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/v4-core/lib/openzeppelin-contracts/lib/forge-std/lib/ds-test" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/v4-core/lib/solmate" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/v4-core/lib/solmate/lib/ds-test" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/v4-periphery" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/v4-periphery/lib/permit2" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/v4-periphery/lib/permit2/lib/forge-gas-snapshot" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/v4-periphery/lib/permit2/lib/forge-gas-snapshot/lib/forge-std" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/v4-periphery/lib/permit2/lib/forge-gas-snapshot/lib/forge-std/lib/ds-test" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/v4-periphery/lib/permit2/lib/forge-std" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/v4-periphery/lib/permit2/lib/forge-std/lib/ds-test" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/v4-periphery/lib/permit2/lib/openzeppelin-contracts" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/v4-periphery/lib/permit2/lib/solmate" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/v4-periphery/lib/permit2/lib/solmate/lib/ds-test" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/v4-periphery/lib/v4-core" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/v4-periphery/lib/v4-core/lib/forge-std" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/v4-periphery/lib/v4-core/lib/openzeppelin-contracts" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/v4-periphery/lib/v4-core/lib/openzeppelin-contracts/lib/erc4626-tests" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/v4-periphery/lib/v4-core/lib/openzeppelin-contracts/lib/forge-std" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/v4-periphery/lib/v4-core/lib/openzeppelin-contracts/lib/forge-std/lib/ds-test" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/v4-periphery/lib/v4-core/lib/solmate" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/KipuBankV3/lib/v4-periphery/lib/v4-core/lib/solmate/lib/ds-test" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/forge-std" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/universal-router" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/universal-router/lib/forge-std" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/universal-router/lib/forge-std/lib/ds-test" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/universal-router/lib/permit2" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/universal-router/lib/permit2/lib/forge-gas-snapshot" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/universal-router/lib/permit2/lib/forge-gas-snapshot/lib/forge-std" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/universal-router/lib/permit2/lib/forge-gas-snapshot/lib/forge-std/lib/ds-test" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/universal-router/lib/permit2/lib/forge-std" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/universal-router/lib/permit2/lib/forge-std/lib/ds-test" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/universal-router/lib/permit2/lib/openzeppelin-contracts" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/universal-router/lib/permit2/lib/solmate" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/universal-router/lib/permit2/lib/solmate/lib/ds-test" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/universal-router/lib/solmate" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/universal-router/lib/solmate/lib/ds-test" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/universal-router/lib/v3-periphery" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/universal-router/lib/v4-periphery" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/universal-router/lib/v4-periphery/lib/permit2" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/universal-router/lib/v4-periphery/lib/permit2/lib/forge-gas-snapshot" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/universal-router/lib/v4-periphery/lib/permit2/lib/forge-gas-snapshot/lib/forge-std" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/universal-router/lib/v4-periphery/lib/permit2/lib/forge-gas-snapshot/lib/forge-std/lib/ds-test" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/universal-router/lib/v4-periphery/lib/permit2/lib/forge-std" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/universal-router/lib/v4-periphery/lib/permit2/lib/forge-std/lib/ds-test" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/universal-router/lib/v4-periphery/lib/permit2/lib/openzeppelin-contracts" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/universal-router/lib/v4-periphery/lib/permit2/lib/solmate" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/universal-router/lib/v4-periphery/lib/permit2/lib/solmate/lib/ds-test" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/universal-router/lib/v4-periphery/lib/v4-core" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/universal-router/lib/v4-periphery/lib/v4-core/lib/forge-std" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/universal-router/lib/v4-periphery/lib/v4-core/lib/openzeppelin-contracts" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/universal-router/lib/v4-periphery/lib/v4-core/lib/openzeppelin-contracts/lib/erc4626-tests" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/universal-router/lib/v4-periphery/lib/v4-core/lib/openzeppelin-contracts/lib/forge-std" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/universal-router/lib/v4-periphery/lib/v4-core/lib/openzeppelin-contracts/lib/forge-std/lib/ds-test" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/universal-router/lib/v4-periphery/lib/v4-core/lib/solmate" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/universal-router/lib/v4-periphery/lib/v4-core/lib/solmate/lib/ds-test" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/v4-core" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/v4-core/lib/forge-std" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/v4-core/lib/openzeppelin-contracts" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/v4-core/lib/openzeppelin-contracts/lib/erc4626-tests" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/v4-core/lib/openzeppelin-contracts/lib/forge-std" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/v4-core/lib/openzeppelin-contracts/lib/forge-std/lib/ds-test" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/v4-core/lib/solmate" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/v4-core/lib/solmate/lib/ds-test" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/v4-periphery" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/v4-periphery/lib/permit2" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/v4-periphery/lib/permit2/lib/forge-gas-snapshot" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/v4-periphery/lib/permit2/lib/forge-gas-snapshot/lib/forge-std" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/v4-periphery/lib/permit2/lib/forge-gas-snapshot/lib/forge-std/lib/ds-test" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/v4-periphery/lib/permit2/lib/forge-std" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/v4-periphery/lib/permit2/lib/forge-std/lib/ds-test" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/v4-periphery/lib/permit2/lib/openzeppelin-contracts" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/v4-periphery/lib/permit2/lib/solmate" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/v4-periphery/lib/permit2/lib/solmate/lib/ds-test" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/test/lib/v4-periphery/lib/v4-core" vcs="Git" />
   </component>
 </project>

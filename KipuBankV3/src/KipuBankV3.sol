@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.30;
-
+pragma solidity ^0.8.24;
+import "forge-std/console.sol";
 // OpenZeppelin and Uniswap imports
 import {SafeERC20, IERC20} from "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
@@ -9,6 +9,12 @@ import {Pausable} from "openzeppelin-contracts/contracts/security/Pausable.sol";
 import {IUniversalRouter} from "universal-router/contracts/interfaces/IUniversalRouter.sol";
 import { Commands } from "universal-router/contracts/libraries/Commands.sol";
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+import { IPoolManager } from "v4-core/src/interfaces/IPoolManager.sol";
+import { IV4Router } from "v4-periphery/src/interfaces/IV4Router.sol";
+import { Actions } from "v4-periphery/src/libraries/Actions.sol";
+import { IPermit2 } from "permit2/src/interfaces/IPermit2.sol";
+import { PoolKey } from "@uniswap/v4-core/src/types/PoolKey.sol";
+import { Currency } from "v4-core/src/types/Currency.sol";
 
 /**
  * @title KipuBankV3
@@ -31,6 +37,11 @@ contract KipuBankV3 is Ownable, ReentrancyGuard, Pausable {
     IUniversalRouter public immutable i_universalRouter;
 
     /**
+     * @notice The inmutable instance of IPermit2
+     */
+     IPermit2 public immutable i_permit2;
+
+    /**
      * @notice The immutable instance of the USDC token contract, used as the bank's unit of account.
      */
     IERC20 public immutable i_USDC;
@@ -50,8 +61,8 @@ contract KipuBankV3 is Ownable, ReentrancyGuard, Pausable {
      */
     address public constant NATIVE_TOKEN = address(0);
 
-    /** 
-     * @notice The maximum staleness of the price feed data, in seconds. 
+    /**
+     * @notice The maximum staleness of the price feed data, in seconds.
      */
     uint256 constant ORACLE_HEARTBEAT = 3600;
 
@@ -126,6 +137,8 @@ contract KipuBankV3 is Ownable, ReentrancyGuard, Pausable {
      */
     error TokenNotSupported();
 
+    error SwapModule_MultipleTokenInputsAreNotAllowed(address native, address tokenIn);
+
     // ==============================================================================
     // Events
     // ==============================================================================
@@ -168,17 +181,19 @@ contract KipuBankV3 is Ownable, ReentrancyGuard, Pausable {
      * @param _initialBankCapUSD The initial capital limit in USDC, denominated with 6 decimals.
      */
     constructor(
-        address _router,
+        address payable _router,
         address _usdcToken,
         address _priceFeed,
         address _wethAddress,
-        uint256 _initialBankCapUSD
+        uint256 _initialBankCapUSD,
+        address _permit2
     ) {
         i_universalRouter = IUniversalRouter(_router);
         i_USDC = IERC20(_usdcToken);
         i_WETH = _wethAddress;
         s_bankCapUSD = _initialBankCapUSD;
         i_priceFeed = AggregatorV3Interface(_priceFeed);
+        i_permit2 = IPermit2(_permit2);
     }
 
     // ==============================================================================
@@ -186,25 +201,86 @@ contract KipuBankV3 is Ownable, ReentrancyGuard, Pausable {
     // ==============================================================================
 
     /**
-     * @dev Internal function to execute a swap via the UniversalRouter.
+     * @dev Internal function to execute an ERC20 to USDC swap via the UniversalRouter.
+     *      Uses a robust two-command sequence: TRANSFER then V3_SWAP_EXACT_IN.
      */
-    function _swapExactInputSingle(address _tokenIn, uint256 _amountIn, uint24 _fee, uint256 _amountOutMinimum) private returns (uint256 usdcAmountOut) {
+    function _swapERC20ToUSDC(address _tokenIn, uint256 _amountIn, uint24 _fee, uint256 _amountOutMinimum) private returns (uint256 usdcAmountOut) {
+        // Paso 1: Aprobar al router para que pueda retirar el token de este contrato.
         IERC20(_tokenIn).safeApprove(address(i_universalRouter), _amountIn);
-        bytes memory path = abi.encodePacked(_tokenIn, _fee, address(i_USDC));
-        bytes memory commands = abi.encodePacked(Commands.V3_SWAP_EXACT_IN);
-        bytes[] memory inputs = new bytes[](1);
-        inputs[0] = abi.encode(address(this), _amountIn, _amountOutMinimum, path, false);
 
+        // Paso 2: Preparar la ruta y los comandos.
+        bytes memory path = abi.encodePacked(_tokenIn, _fee, address(i_USDC));
+        bytes memory commands = abi.encodePacked(Commands.TRANSFER, Commands.V3_SWAP_EXACT_IN);
+
+        bytes[] memory inputs = new bytes[](2);
+
+        // Input para TRANSFER: El router retira el token de este contrato hacia sí mismo.
+        inputs[0] = abi.encode(
+            _tokenIn,
+            address(i_universalRouter),
+            _amountIn
+        );
+
+        // Input para V3_SWAP_EXACT_IN: El router intercambia el balance que acaba de recibir.
+        inputs[1] = abi.encode(
+            address(this), // El USDC final se envía a este contrato.
+            0,             // amountIn es 0 para usar el balance completo del paso anterior.
+            _amountOutMinimum,
+            path,
+            false
+        );
+
+        // Paso 3: Ejecutar la transacción.
         uint256 balanceBefore = i_USDC.balanceOf(address(this));
-        if (_tokenIn == i_WETH) {
-            i_universalRouter.execute{value: _amountIn}(commands, inputs, block.timestamp);
-        } else {
-            i_universalRouter.execute(commands, inputs, block.timestamp);
-        }
+        i_universalRouter.execute(commands, inputs, block.timestamp + 60);
         usdcAmountOut = i_USDC.balanceOf(address(this)) - balanceBefore;
+
+        // Anular la aprobación para mayor seguridad.
+        IERC20(_tokenIn).safeApprove(address(i_universalRouter), 0);
+
         if (usdcAmountOut == 0) revert SwapFailed("Swap resulted in zero output");
     }
-    
+
+
+    /**
+     * @dev Internal function to execute a native ETH to USDC swap via the UniversalRouter.
+     */
+    function _swapNativeToUSDC(uint256 _amountIn, uint24 _fee, uint256 _amountOutMinimum) private returns (uint256 usdcAmountOut) {
+        bytes memory path = abi.encodePacked(i_WETH, _fee, address(i_USDC));
+        bytes memory commands = abi.encodePacked(Commands.WRAP_ETH, Commands.V3_SWAP_EXACT_IN);
+        bytes[] memory inputs = new bytes[](2);
+
+        inputs[0] = abi.encode(
+            address(i_universalRouter),
+            _amountIn
+        );
+
+        inputs[1] = abi.encode(
+            address(this),
+            0,
+            _amountOutMinimum,
+            path,
+            false
+        );
+
+        // --- INICIO DE LA DEPURACIÓN ---
+        console.log("--- Depurando _swapNativeToUSDC ---");
+        console.log("Router Address:", address(i_universalRouter));
+        console.log("ETH a intercambiar (value):", _amountIn);
+        console.log("Fee:", _fee);
+        // --- FIN DE LA DEPURACIÓN ---
+
+        uint256 balanceBefore = i_USDC.balanceOf(address(this));
+
+        console.log("Llamando a i_universalRouter.execute...");
+        i_universalRouter.execute{value: _amountIn}(commands, inputs, block.timestamp + 60);
+        console.log("Llamada a execute completada.");
+
+        usdcAmountOut = i_USDC.balanceOf(address(this)) - balanceBefore;
+
+        if (usdcAmountOut == 0) revert SwapFailed("Swap resulted in zero output");
+    }
+
     /**
      * @dev Internal function to check the bank cap before a deposit.
      */
@@ -214,7 +290,7 @@ contract KipuBankV3 is Ownable, ReentrancyGuard, Pausable {
 
         // Value of ETH held by the contract, in USD with 8 decimals
         uint256 ethValueUSD = (address(this).balance * uint256(price)) / 10**18;
-        
+
         // Value of USDC held by the contract, normalized to 8 decimals for comparison
         uint256 usdcValueUSD = (i_USDC.balanceOf(address(this)) * 100);
 
@@ -240,43 +316,98 @@ contract KipuBankV3 is Ownable, ReentrancyGuard, Pausable {
     }
 
     /**
-     * @notice Deposits a whitelisted token to be held as-is (V2 functionality).
-     */
-    function depositSupportedToken(address _token, uint256 _amount) external nonReentrant whenNotPaused {
-        if (_amount == 0) revert AmountMustBePositive();
-        if (!s_isTokenSupported[_token]) revert TokenNotSupported();
-
-        _checkBankCap(address(_token), _amount );
-        
-        uint256 balanceBefore = IERC20(_token).balanceOf(address(this));
-        IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
-        uint256 amountReceived = IERC20(_token).balanceOf(address(this)) - balanceBefore;
-
-        s_multiTokenBalances[msg.sender][_token] += amountReceived;
-        emit Deposit(msg.sender, _token, amountReceived);
-    }
-
-    /**
-     * @notice Deposits any arbitrary token to be swapped for USDC (V3 functionality).
+     * @notice Deposits any arbitrary ERC20 token to be swapped for USDC (V3 functionality).
      */
     function depositAndSwapToUSDC(address _tokenIn, uint256 _amountIn, uint24 _fee) external nonReentrant whenNotPaused {
         if (_tokenIn == address(i_USDC)) revert InvalidSwapParameters("Use a direct deposit function for USDC");
         if (_amountIn == 0) revert AmountMustBePositive();
-        
+        if (!s_isTokenSupported[_tokenIn]) revert TokenNotSupported();
+        if (_tokenIn == NATIVE_TOKEN) revert InvalidAddress("Use depositAndSwapNativeToUSDC for ETH"); // Prevenir uso incorrecto
+
         IERC20(_tokenIn).safeTransferFrom(msg.sender, address(this), _amountIn);
-        uint256 usdcReceived = _swapExactInputSingle(_tokenIn, _amountIn, _fee, 0);
-        
+        uint256 usdcReceived = _swapERC20ToUSDC(_tokenIn, _amountIn, _fee, 0);
+
         _checkBankCap(address(i_USDC), usdcReceived);
 
         s_usdcBalances[msg.sender] += usdcReceived;
         emit DepositAndSwap(msg.sender, _tokenIn, _amountIn, usdcReceived);
     }
 
+    /**
+     * @notice Deposits native ETH to be swapped for USDC.
+     */
+    function depositAndSwapNativeToUSDC(uint24 _fee) external payable nonReentrant whenNotPaused {
+        if (msg.value == 0) revert AmountMustBePositive();
+
+        uint256 usdcReceived = _swapNativeToUSDC(msg.value, _fee, 0);
+
+        _checkBankCap(address(i_USDC), usdcReceived);
+
+        s_usdcBalances[msg.sender] += usdcReceived;
+        emit DepositAndSwap(msg.sender, NATIVE_TOKEN, msg.value, usdcReceived);
+    }
+
+    /**
+         @notice función para ejecutar swaps de inputs exactos
+         @notice los outputs pueden variar según el valor mínimo _minAmountOut
+         @param _key la información de la estructura Pool
+         @param _amountIn la cantidad a intercambiar
+         @param _minAmountOut la cantidad mínima aceptada después de un swap
+         @param _deadline el tiempo máximo que un usuario acepta esperar para completar un swap
+         @dev esta función no puede manejar ether y ERC20 al mismo tiempo.
+    */
+    function swapExactInputSingle(
+        PoolKey calldata _key,
+        uint128 _amountIn,
+        uint128 _minAmountOut,
+        uint48 _deadline
+    ) external payable {
+        address tokenIn = Currency.unwrap(_key.currency0);
+        if(msg.value > 0 && tokenIn != address(0)) revert SwapModule_MultipleTokenInputsAreNotAllowed(address(0), tokenIn);
+        //1. codificar el comando del Universal Router
+        bytes memory commands = abi.encodePacked(uint8(Commands.V4_SWAP));
+        //2. codificar acciones del V4Router
+        bytes memory actions = abi.encodePacked(
+            uint8(Actions.SWAP_EXACT_IN_SINGLE),
+            uint8(Actions.SETTLE_ALL),
+            uint8(Actions.TAKE_ALL)
+        );
+        //3. preparar parámetros para cada acción
+        bytes[] memory params = new bytes[](3);
+        params[0] = abi.encode(
+            IV4Router.ExactInputSingleParams({
+                poolKey: _key,
+                zeroForOne: true,
+                amountIn: _amountIn,
+                amountOutMinimum: _minAmountOut,
+                hookData: bytes("")
+            })
+        );
+        params[1] = abi.encode(_key.currency0, _amountIn);
+        params[2] = abi.encode(_key.currency1, _minAmountOut);
+        //4. preparar inputs
+        bytes[] memory inputs = new bytes[](1);
+        //5. Combinar acciones y parámetros en inputs
+        inputs[0] = abi.encode(actions, params);
+        //6. Si el token es ERC20, transferir desde el usuario y realizar los permisos necesarios.
+        if(tokenIn != address(0)){
+            //6.1 Transferir tokens desde el usuario
+            IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), _amountIn);
+            //6.2 Aprobar al contrato Permit2
+            IERC20(tokenIn).safeIncreaseAllowance(address(i_permit2), _amountIn);
+            //6.3 Aprobar el Universal Router mediante Permit
+            i_permit2.approve(tokenIn, address(i_universalRouter), _amountIn, _deadline);
+        }
+        //7. Ejecutar el swap
+        i_universalRouter.execute{value: _amountIn}(commands, inputs, _deadline);
+        emit DepositAndSwap(msg.sender, tokenIn , msg.value, _amountIn);
+    }
+
     // ==============================================================================
     // Withdrawal Functions
     // ==============================================================================
 
- 
+
     /**
      * @notice Withdraws assets held directly (ETH or whitelisted tokens).
      */
@@ -286,7 +417,7 @@ contract KipuBankV3 is Ownable, ReentrancyGuard, Pausable {
         if (userBalance < _amount) revert InsufficientBalance(userBalance, _amount);
 
         s_multiTokenBalances[msg.sender][_token] = userBalance - _amount;
-        
+
         if (_token == NATIVE_TOKEN) {
             (bool success, ) = msg.sender.call{value: _amount}("");
             if (!success) revert SwapFailed("Native token transfer failed");
@@ -295,7 +426,7 @@ contract KipuBankV3 is Ownable, ReentrancyGuard, Pausable {
         }
         emit Withdrawal(msg.sender, _token, _amount);
     }
-    
+
     /**
      * @notice Withdraws the user's USDC balance.
      */
@@ -321,7 +452,7 @@ contract KipuBankV3 is Ownable, ReentrancyGuard, Pausable {
     function setBankCap(uint256 _newBankCapUSD) external onlyOwner whenNotPaused {
         s_bankCapUSD = _newBankCapUSD;
     }
-    
+
 
     /**
      * @notice Pauses all token transfers. Can only be called by the owner.
