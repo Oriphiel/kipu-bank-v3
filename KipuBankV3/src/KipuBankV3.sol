@@ -24,25 +24,35 @@ import { Currency, CurrencyLibrary } from "v4-core/src/types/Currency.sol";
  */
 contract KipuBankV3 is Ownable, ReentrancyGuard, Pausable {
     using SafeERC20 for IERC20;
-    using CurrencyLibrary for Currency; // <-- CORRECCIÓN IMPORTANTE
+    using CurrencyLibrary for Currency;
 
     // ==============================================================================
     // State Variables
     // ==============================================================================
-
+    /** @notice The immutable instance of Uniswap's Universal Router, which executes V4-style commands. */
     IUniversalRouter public immutable i_universalRouter;
+    /** @notice The immutable instance of Uniswap's Permit2 contract for signature-based approvals. */
     IPermit2 public immutable i_permit2;
+    /** @notice The immutable instance of the USDC token contract, used as the primary stable unit of account. */
     IERC20 public immutable i_USDC;
+    /** @notice The immutable address of the Wrapped Ether (WETH) contract. */
     address public immutable i_WETH;
+    /** @notice The immutable instance of the Chainlink ETH/USD price feed for V2-style cap validation. */
     AggregatorV3Interface public immutable i_priceFeed;
 
+    /** @notice A constant representing the native token (ETH) for internal accounting. */
     address public constant NATIVE_TOKEN = address(0);
-    uint256 constant ORACLE_HEARTBEAT = 3600;
-    uint256 public s_bankCapUSD;
+    /** @notice The maximum staleness period for oracle price data, in seconds (1 hour). */
+    uint256 private constant ORACLE_HEARTBEAT = 3600;
 
-    mapping(address => uint256) private s_usdcBalances;
-    mapping(address => mapping(address => uint256)) private s_multiTokenBalances;
-    mapping(address => bool) private s_isTokenSupported;
+    /** @notice The total capital limit of the bank, in USD with 8 decimals (matching Chainlink). */
+    uint256 public s_bankCapUSD;
+    /** @notice V4-style accounting for USDC balances derived from swaps. user => balance. */
+    mapping(address => uint256) public s_usdcBalances;
+    /** @notice V2-style accounting for native ETH and whitelisted tokens. user => token => balance. */
+    mapping(address => mapping(address => uint256)) public s_multiTokenBalances;
+    /** @notice Whitelist for ERC-20 tokens that can be held directly by the bank (V2 functionality). */
+    mapping(address => bool) public s_isTokenSupported;
 
     // ==============================================================================
     // Custom Errors
@@ -84,7 +94,7 @@ contract KipuBankV3 is Ownable, ReentrancyGuard, Pausable {
     }
 
     // ==============================================================================
-    // Uniswap V4 Generic Swap Function (TOTALMENTE CORREGIDA)
+    // Uniswap V4 Generic Swap Function
     // ==============================================================================
 
     /**
@@ -108,44 +118,48 @@ contract KipuBankV3 is Ownable, ReentrancyGuard, Pausable {
             revert SwapModule_MultipleTokenInputsAreNotAllowed();
         }
 
+        // El swap solo procederá si el token de entrada está en la lista blanca (o es ETH nativo).
+        if (tokenIn != NATIVE_TOKEN && !s_isTokenSupported[tokenIn]) {
+            revert TokenNotSupported();
+        }
+
+        if (tokenOut != NATIVE_TOKEN && !s_isTokenSupported[tokenOut]) {
+                    revert TokenNotSupported();
+        }
+
         bytes memory commands = abi.encodePacked(uint8(Commands.V4_SWAP));
 
-        // Secuencia de Acciones: 1. Realizar el swap. 2. Enviar los tokens de salida al contrato.
+        // --- CORRECCIÓN FINAL: Usar la acción TAKE en lugar de SETTLE ---
         bytes memory actions = abi.encodePacked(
             uint8(Actions.SWAP_EXACT_IN_SINGLE),
-            uint8(Actions.SETTLE)
+            uint8(Actions.TAKE) // <--- CAMBIO #1
         );
 
         bytes[] memory params = new bytes[](2);
         params[0] = abi.encode(
             IV4Router.ExactInputSingleParams({
                 poolKey: _key,
-                // AVISO: Esto asume un swap de token0 a token1.
                 zeroForOne: true,
                 amountIn: _amountIn,
                 amountOutMinimum: _minAmountOut,
                 hookData: bytes("")
             })
         );
-        // El parámetro para la acción SETTLE es simplemente la moneda de salida.
-        params[1] = abi.encode(_key.currency1);
+        // Parámetros para la acción TAKE: (moneda, destinatario, cantidad)
+        // Usamos cantidad 0 para indicar "toma todo el saldo que me debes de esta moneda".
+        params[1] = abi.encode(_key.currency1, address(this), uint128(0)); // <--- CAMBIO #2
 
         bytes[] memory inputs = new bytes[](1);
         inputs[0] = abi.encode(actions, params);
 
-        // --- Flujo de aprobación simplificado y correcto para ERC20 ---
+        // El resto de la función es correcto...
         if (tokenIn != NATIVE_TOKEN) {
-            // El contrato toma la custodia de los tokens del usuario.
-            // REQUISITO: El usuario debe haber aprobado a ESTE contrato previamente.
             IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), _amountIn);
-            // Ahora, el contrato (dueño de los tokens) aprueba al router.
             IERC20(tokenIn).safeApprove(address(i_universalRouter), _amountIn);
         }
 
-        // --- Medir el balance del token de salida ---
         uint256 balanceBefore = IERC20(tokenOut).balanceOf(address(this));
 
-        // --- Lógica de `execute` condicional ---
         if (tokenIn == NATIVE_TOKEN) {
             i_universalRouter.execute{value: msg.value}(commands, inputs, _deadline);
         } else {
@@ -155,21 +169,27 @@ contract KipuBankV3 is Ownable, ReentrancyGuard, Pausable {
         uint256 balanceAfter = IERC20(tokenOut).balanceOf(address(this));
         uint256 amountOut = balanceAfter - balanceBefore;
 
-        // Anular la aprobación del router para mayor seguridad.
         if (tokenIn != NATIVE_TOKEN && IERC20(tokenIn).allowance(address(this), address(i_universalRouter)) > 0) {
             IERC20(tokenIn).safeApprove(address(i_universalRouter), 0);
         }
 
-        // --- Emitir el evento con los datos correctos ---
+        // Se comprueba el valor total del banco DESPUÉS de recibir los nuevos fondos.
+        _checkBankCap(tokenOut, amountOut);
+
         uint256 actualAmountIn = (tokenIn == NATIVE_TOKEN) ? msg.value : _amountIn;
-        s_usdcBalances[msg.sender] += amountOut; // Asumiendo que el output es USDC para el balance
+        if (tokenOut == address(i_USDC)) {
+            s_usdcBalances[msg.sender] += amountOut;
+        } else {
+            // If swapping to other tokens is allowed, credit the multi-token balance.
+            s_multiTokenBalances[msg.sender][tokenOut] += amountOut;
+        }
         emit DepositAndSwap(msg.sender, tokenIn, actualAmountIn, amountOut);
     }
-
     // ==============================================================================
     // Core Bank Deposit & Withdrawal Functions
     // ==============================================================================
 
+    /** @notice Deposits ETH to be held as ETH in the bank. */
     function depositNative() external payable nonReentrant whenNotPaused {
         if (msg.value == 0) revert AmountMustBePositive();
         _checkBankCap(NATIVE_TOKEN, msg.value);
@@ -177,12 +197,26 @@ contract KipuBankV3 is Ownable, ReentrancyGuard, Pausable {
         emit Deposit(msg.sender, NATIVE_TOKEN, msg.value);
     }
 
+    /** @notice Deposits a whitelisted token to be held as-is. */
+    function depositSupportedToken(address _token, uint256 _amount) external nonReentrant whenNotPaused {
+        if (_amount == 0) revert AmountMustBePositive();
+        if (!s_isTokenSupported[_token]) revert TokenNotSupported();
+        _checkBankCap(_token, _amount);
+
+        uint256 balanceBefore = IERC20(_token).balanceOf(address(this));
+        IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
+        uint256 amountReceived = IERC20(_token).balanceOf(address(this)) - balanceBefore;
+
+        s_multiTokenBalances[msg.sender][_token] += amountReceived;
+        emit Deposit(msg.sender, _token, amountReceived);
+    }
+
     function _checkBankCap(address _tokenDeposited, uint256 _amountDeposited) internal view {
         (, int256 price, , uint256 updatedAt, ) = i_priceFeed.latestRoundData();
         if (price <= 0 || block.timestamp - updatedAt > ORACLE_HEARTBEAT) revert OracleFailed();
 
         uint256 ethValueUSD = (address(this).balance * uint256(price)) / 10**18;
-        uint256 usdcValueUSD = i_USDC.balanceOf(address(this)) * (10**12);
+        uint256 usdcValueUSD = i_USDC.balanceOf(address(this)) * (10**2);
         uint256 totalValueUSD = ethValueUSD + usdcValueUSD;
 
         if (totalValueUSD > s_bankCapUSD) {
